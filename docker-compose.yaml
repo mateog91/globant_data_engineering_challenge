@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pswd12345
+      POSTGRES_DB: postgres
+    volumes:
+      - ./file_storage:/file_storage
+
+  api:
+    build:
+      context: .
+      dockerfile: api.Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./file_storage:/file_storage
+      - ./api/app:/api/app
+    depends_on:
+      - postgres
+volumes:
+  file_storage:
