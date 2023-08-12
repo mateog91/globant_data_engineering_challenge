@@ -8,16 +8,16 @@ class Department(Base):
     __tablename__ = "departments"
 
     id = Column(Integer, primary_key=True, index=True)
-    department = Column(String)
-    
+    department = Column(String, unique=True, index=True)
+
     hired_employees = relationship("Hired_Employee", back_populates="department")
 
 class Job(Base):
     __tablename__ = "jobs"
 
     id = Column(Integer, primary_key=True, index=True)
-    job = Column(String)
-    
+    job = Column(String, unique=True, index=True)
+
     hired_employee = relationship("Hired_Employee", back_populates="job")
 
 
