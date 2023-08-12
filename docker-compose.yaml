@@ -23,6 +23,6 @@ services:
       - ./file_storage:/file_storage
       - ./api/app:/api/app
     depends_on:
-      - postgres
+      - postgresserver
 volumes:
   file_storage:
