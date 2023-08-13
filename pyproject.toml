@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "globant-data-engineering-challenge"
+version = "0.1.0"
+description = ""
+authors = ["Mateo <mateog91@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+alembic = "^1.11.2"
+fastapi = ">=0.68.0,<0.69.0"
+pydantic = ">=1.8.0,<2.0.0"
+uvicorn = ">=0.15.0,<0.16.0"
+sqlalchemy = "2.0.19"
+psycopg2-binary = "^2.9.7"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

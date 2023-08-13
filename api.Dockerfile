@@ -1,11 +1,19 @@
 FROM python:3.9
 
+RUN pip install poetry
+
+RUN poetry config virtualenvs.create false
+
 WORKDIR /api
 
-COPY ./api/requirements.txt /api/requirements.txt
+COPY ./pyproject.toml /api/pyproject.toml
 
-RUN pip install --no-cache-dir --upgrade -r /api/requirements.txt
+COPY ./poetry.lock /api/poetry.lock
 
-COPY ./api/app /api/app
+RUN poetry install
+
+COPY ./api /api
+
+RUN alembic upgrade head
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

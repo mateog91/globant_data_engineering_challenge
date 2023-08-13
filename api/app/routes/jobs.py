@@ -4,8 +4,9 @@
 from fastapi import APIRouter, status, HTTPException, Depends
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from api.app import crud
 from app.dependencies import get_db
+from api import schemas
 
 router = APIRouter(
     prefix="/jobs",
