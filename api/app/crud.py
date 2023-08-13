@@ -1,19 +1,23 @@
 from sqlalchemy.orm import Session
+from typing import List
 
-from . import models, schemas
+from app import models, schemas
 
 ## Departments CRUD ##
-def get_department(db: Session, department_id: int):
+def get_department(db: Session, department_id: int) -> models.Department:
     return db.query(models.Department).filter(models.Department.id == department_id).first()
 
-def get_department_by_name(db: Session, name: str):
+def get_department_by_name(db: Session, name: str) -> models.Department:
     return db.query(models.Department).filter(models.Department.department == name).first()
 
 
-def get_departments(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Department).offset(skip).limit(limit).all()
+def get_departments(db: Session, skip: int = 0, limit: int = 100) -> List[models.Department]:
+    result = db.query(models.Department).offset(skip).limit(limit).all()
+    for e in result:
+        print(e, type(e))
+    return result
 
-def create_department(db: Session, department: schemas.DepartmentCreate):
+def create_department(db: Session, department: schemas.DepartmentCreate) -> models.Department:
     db_department = models.Department(department=department.department)
     db.add(db_department)
     db.commit()
