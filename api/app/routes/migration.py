@@ -40,7 +40,7 @@ async def create_upload_file(file_type: FileType, file: UploadFile = File(...)):
         await out_f.write(content)
     return {"filename": file.filename}
 
-@routing.post("/upload_to_db")
+# @routing.post("/upload_to_db")
 
 
 
