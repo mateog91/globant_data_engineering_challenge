@@ -24,3 +24,11 @@ def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
 def read_jobs(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     jobs = crud.job.get_all(db, skip=skip, limit=limit)
     return jobs
+
+@router.get("/hired_employees/{job_id}", response_model=list[schemas.HiredEmployee])
+def get_hired_employees_by_job(job_id: int, db: Session = Depends(get_db)):
+    db_job = crud.job.get(db, job_id)
+    if db_job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    hired_employees_list = db_job.hired_employees
+    return hired_employees_list
