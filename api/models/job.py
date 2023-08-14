@@ -11,4 +11,4 @@ class Job(Base):
     id = Column(Integer, primary_key=True, index=True)
     job = Column(String, unique=True, index=True)
 
-    hired_employees = relationship("Hired_Employee", back_populates="job")
+    hired_employees = relationship("Hired_Employee", backref="job")

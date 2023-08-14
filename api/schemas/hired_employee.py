@@ -16,5 +16,6 @@ class HiredEmployeeCreate(HiredEmployeeBase):
 class HiredEmployee(HiredEmployeeBase):
     id: int
 
+
     class Config:
         orm_mode = True

@@ -14,6 +14,6 @@ class Hired_Employee(Base):
     department_id = Column(Integer, ForeignKey("departments.id"))
     job_id = Column(Integer, ForeignKey("jobs.id"))
 
-    department = relationship("Department", back_populates="hired_employees")
+    # department = relationship("Department", backref="hired_employees_r")
 
-    job = relationship("Job", back_populates="hired_employees")
+    # job = relationship("Job", backref="hired_employees_r")

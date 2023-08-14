@@ -1,4 +1,4 @@
-from typing import Union
+from typing import List, Optional, Union
 from pydantic import BaseModel
 from .hired_employee import HiredEmployee
 
@@ -13,7 +13,7 @@ class JobCreate(JobBase):
 
 class Job(JobBase):
     id: int
-    hired_employee: list[HiredEmployee] = []
+    hired_employees: list[HiredEmployee] = []
 
     class Config:
         orm_mode = True

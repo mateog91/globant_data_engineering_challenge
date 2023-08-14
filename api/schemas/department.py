@@ -13,7 +13,7 @@ class DepartmentCreate(DepartementBase):
 
 class Department(DepartementBase):
     id: int
-    hired_employee: list[HiredEmployee] = []
+    hired_employees: list[HiredEmployee] = []
 
     class Config:
         orm_mode = True

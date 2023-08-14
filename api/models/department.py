@@ -10,4 +10,4 @@ class Department(Base):
     id = Column(Integer, primary_key=True, index=True)
     department = Column(String, unique=True, index=True)
 
-    hired_employees = relationship("Hired_Employee", back_populates="department")
+    hired_employees = relationship("Hired_Employee", backref="department")
