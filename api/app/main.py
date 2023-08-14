@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from sqlalchemy.orm import Session
 
 from models.base import engine
-from app.routes import jobs, departments
+from app.routes import jobs, departments, migration
 import models
 print("here")
 
@@ -13,6 +13,7 @@ app = FastAPI()
 
 app.include_router(jobs.router)
 app.include_router(departments.router)
+app.include_router(migration.router)
 
 
 @app.get("/")
