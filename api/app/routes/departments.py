@@ -4,9 +4,9 @@
 from fastapi import APIRouter, status, HTTPException, Depends
 from sqlalchemy.orm import Session
 
-from api.app import crud
-from api.app.dependencies import get_db
-from api import schemas
+from app.dependencies import get_db
+import crud
+import schemas
 
 router = APIRouter(
     prefix="/departments",
@@ -14,18 +14,15 @@ router = APIRouter(
 )
 
 
-@router.post("/departments/", response_model=schemas.Department)
+@router.post("/", response_model=schemas.Department)
 def create_department(department: schemas.DepartmentCreate, db: Session = Depends(get_db)):
-    db_department = crud.get_department_by_name(db, name=department.department)
-    if db_department:
-        raise HTTPException(
-            status_code=400, detail="Department already registered")
-    return crud.create_department(db=db, department=department)
+
+    return crud.department.create(db=db, data=department)
 
 
-@router.get("/departments/", response_model=list[schemas.Department])
+@router.get("/", response_model=list[schemas.Department])
 def read_departments(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    departments = crud.get_departments(db, skip=skip, limit=limit)
+    departments = crud.department.get_all(db, skip=skip, limit=limit)
     return departments
 
 # aqui voy

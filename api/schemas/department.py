@@ -13,7 +13,6 @@ class DepartmentCreate(DepartementBase):
 
 class Department(DepartementBase):
     id: int
-
     hired_employee: list[HiredEmployee] = []
 
     class Config:
