@@ -29,9 +29,9 @@ class CRUDBase(tp.Generic[ModelType, CreateSchemaType]):
         db.commit()
         db.refresh(row)
         return row
-    
+
     def create_many(self, db: Session, data: tp.List[CreateSchemaType]) -> tp.List[ModelType]:
-        batches = itertools.
+        # batches = itertools.
         rows = [self.model(**row.dict()) for row in data]
         db.add_all(rows)
         db.commit()
