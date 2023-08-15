@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import typing as tp
+from more_itertools import ichunked
 from models.base import Base
 
 import schemas
@@ -31,10 +32,17 @@ class CRUDBase(tp.Generic[ModelType, CreateSchemaType]):
         return row
 
     def create_many(self, db: Session, data: tp.List[CreateSchemaType]) -> tp.List[ModelType]:
-        # batches = itertools.
-        rows = [self.model(**row.dict()) for row in data]
-        db.add_all(rows)
-        db.commit()
-        for row in rows:
-            db.refresh(row)
-        return rows
+        all_chunks = ichunked(data, 1000)
+        return_rows = []
+        for chunck in all_chunks:
+            print("inside create many")
+            # print(type(chunck[0]))
+            # rows = [print(row, type(row)) for row in chunck]
+            rows = [self.model(**row) for row in chunck]
+            db.add_all(rows)
+            db.commit()
+            for row in rows:
+                db.refresh(row)
+            return_rows.extend(rows)
+            # print(rows)
+        return return_rows

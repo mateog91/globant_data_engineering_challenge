@@ -11,6 +11,10 @@ class JobCreate(JobBase):
     pass
 
 
+class JobImport(JobBase):
+    id: int
+
+
 class Job(JobBase):
     id: int
     hired_employees: list[HiredEmployee] = []
