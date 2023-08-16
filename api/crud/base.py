@@ -1,3 +1,4 @@
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import typing as tp
@@ -25,7 +26,8 @@ class CRUDBase(tp.Generic[ModelType, CreateSchemaType]):
         return result
 
     def create(self, db: Session, data: CreateSchemaType) -> ModelType:
-        row = self.model(**data.dict())
+        db_obj_data = jsonable_encoder(data)
+        row = self.model(**db_obj_data)
         db.add(row)
         db.commit()
         db.refresh(row)
@@ -35,14 +37,10 @@ class CRUDBase(tp.Generic[ModelType, CreateSchemaType]):
         all_chunks = ichunked(data, 1000)
         return_rows = []
         for chunck in all_chunks:
-            print("inside create many")
-            # print(type(chunck[0]))
-            # rows = [print(row, type(row)) for row in chunck]
-            rows = [self.model(**row) for row in chunck]
+            rows = [self.model(**jsonable_encoder(row)) for row in chunck]
             db.add_all(rows)
             db.commit()
             for row in rows:
                 db.refresh(row)
             return_rows.extend(rows)
-            # print(rows)
         return return_rows

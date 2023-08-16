@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """ module of migration endpoints """
 
+from dataclasses import field
 from datetime import datetime
 from enum import Enum
 from typing import Annotated
@@ -24,24 +25,29 @@ router = APIRouter(
 )
 
 
-
 class FileType(str, Enum):
     job = "job"
     department = "department"
     hired_employee = "hired_employee"
-    
-csv_schema = {
-    "job": list(models.Job.__table__.columns.keys()),
-    "department": list(models.Department.__table__.columns.keys()),
-    "hired_employee": list(models.Hired_Employee.__table__.columns.keys())
-}
 
-class CsvSchema:
-    job: list(models.Job.__table__.columns.keys())
-    department: list(models.Department.__table__.columns.keys())
-    hired_employee: list(models.Hired_Employee.__table__.columns.keys())
-    
-csv_schema = CsvSchema()
+
+csv_schema = {
+    "job": {
+        "fieldnames": list(models.Job.__table__.columns.keys()),
+        "write_function": crud.job.create_many,
+        "read_function": crud.job.get_all
+    },
+    "department": {
+        "fieldnames": list(models.Department.__table__.columns.keys()),
+        "write_function": crud.department.create_many,
+        "read_function": crud.department.get_all
+    },
+    "hired_employee": {
+        "fieldnames": list(models.Hired_Employee.__table__.columns.keys()),
+        "write_function": crud.hired_employee.create_many,
+        "read_function": crud.hired_employee.get_all
+    }
+}
 
 
 @router.post("/uploadfile/")
@@ -51,7 +57,6 @@ async def create_upload_file(file_type: FileType, file: UploadFile = File(...)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="File must be a CSV file"
         )
-    # out_file_name = f"/file_storage/{file_type}/{datetime.now()}_{file.filename}"
     out_file_name = f"/file_storage/{file_type}/{file_type}.csv"
     async with aiofiles.open(out_file_name, mode='wb') as out_f:
         content = await file.read()
@@ -61,24 +66,63 @@ async def create_upload_file(file_type: FileType, file: UploadFile = File(...)):
 
 @router.post("/upload_to_db")
 async def upload_to_db(db: Session = Depends(get_db)):
-    from models.job import Job as modeljob
-    # for t in FileType:
-    #     read_file_path = f"/file_storage/{t}/{t}.csv"
-    lst = modeljob.__table__.columns.keys()
-    # print(lst)
+    for t in FileType:
+        # t = "hired_employee"
+        # variable initialization
+        read_file_path = f"/file_storage/{t}/{t}.csv"
+        fieldnames = csv_schema[t]['fieldnames']
+        write_all_function = csv_schema[t]["write_function"]
+        read_all_function = csv_schema[t]["read_function"]
+        final_result = {}
 
-    t = "job"
-    read_file_path = f"/file_storage/{t}/{t}.csv"
-    async with aiofiles.open(read_file_path, mode='r') as f:
-        content = await f.readlines()
-    csv_reader = csv.DictReader(content, fieldnames=lst, delimiter=',')
-    data_list = list(csv_reader)
-    
-    result = crud.job.create_many(db=db, data=data_list)
-    # for e in csv_reader:
-    #     print(e)
+        # Check if file exists
+        file_exists = await aiofiles.os.path.isfile(read_file_path)
+        if not file_exists:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="File not found"
+            )
 
-    return {"message": f"{len(result)} created"}
+        # check if table is not empty
+        if read_all_function(db=db):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Table must be empty"
+            )
+        # read csv file
+        async with aiofiles.open(read_file_path, mode='r') as f:
+            content = await f.readlines()
+        # reader with rows maped as dict
+        csv_reader = csv.DictReader(
+            content, fieldnames=fieldnames, delimiter=',')
+        # convert to list
+        data_list = []
+        for row in csv_reader:
+            if row.get('department_id') == '':
+                row['department_id'] = None
+            if row.get("job_id") == '':
+                row['job_id'] = None
+            data_list.append(row)
+
+        # data_list = list(csv_reader)
+
+        # test = data_list[66]['department_id']
+        # void_string = ''
+        # print(f"printing thest:-- {test}--", type(test), len(test))
+
+        # print(test is None)
+        # break
+
+        # call write function of particular model
+        # try:
+        #     result = write_all_function(db=db, data=data_list)
+        # except Exception as e:
+        result = write_all_function(db=db, data=data_list)
+
+        # store result
+        final_result[t] = len(result)
+
+    return {"message": f"created\n{final_result}"}
 
     # if file_type == FileType.job:
     #     crud.job.create_many() (db, file_type)

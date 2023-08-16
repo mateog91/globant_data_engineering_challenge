@@ -7,7 +7,7 @@ from app.routes import jobs, departments, migration, hired_employees
 import models
 print("here")
 
-models.Base.metadata.create_all(bind=engine)
+# models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 

@@ -1,16 +1,19 @@
-from typing import Union
+from typing import Optional
 from pydantic import BaseModel
 
 
 class HiredEmployeeBase(BaseModel):
-    name: Union[str, None] = None
-    datetime: Union[str, None] = None
-    department_id: Union[int, None] = None
-    job_id: Union[int, None] = None
+    name: Optional[str] = None
+    datetime: Optional[str] = None
+    department_id: Optional[int] = None
+    job_id: Optional[int] = None
 
 
 class HiredEmployeeCreate(HiredEmployeeBase):
     pass
+
+class HiredEmployeeCreateList(HiredEmployeeCreate):
+    id: int
 
 
 class HiredEmployee(HiredEmployeeBase):
