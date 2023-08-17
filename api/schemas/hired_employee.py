@@ -12,9 +12,6 @@ class HiredEmployeeCreate(HiredEmployeeBase):
     pass
 
 
-
-
-
 class HiredEmployee(HiredEmployeeBase):
     id: int
     datetime: Optional[str] = None

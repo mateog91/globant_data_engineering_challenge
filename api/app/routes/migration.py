@@ -59,7 +59,7 @@ async def create_upload_file(file_type: FileType, file: UploadFile = File(...)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="File must be a CSV file"
         )
-    out_file_name = f"/file_storage/{file_type}/{file_type}.csv"
+    out_file_name = f"/file_storage/migration_data/input_data/{file_type}/{file_type}.csv"
     async with aiofiles.open(out_file_name, mode='wb') as out_f:
         content = await file.read()
         await out_f.write(content)

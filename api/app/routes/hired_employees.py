@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """ module of department endpoints """
-
+from datetime import datetime, timezone
 from math import e
 from fastapi import APIRouter, status, HTTPException, Depends
 from sqlalchemy.orm import Session
@@ -17,9 +17,9 @@ router = APIRouter(
 
 
 @router.post("/", response_model=schemas.HiredEmployee)
-def create_hired_employee(department_in: schemas.HiredEmployeeCreate, db: Session = Depends(get_db)):
+def create_hired_employee(hired_employee_in: schemas.HiredEmployeeCreate, db: Session = Depends(get_db)):
 
-    return crud.hired_employee.create(db=db, data_in=department_in)
+    return crud.hired_employee.create(db=db, data_in=hired_employee_in)
 
 
 @router.get("/", response_model=list[schemas.HiredEmployee])
@@ -45,13 +45,11 @@ def create_hired_employees(
     for data in list_data_in:
         try:
             validated_data = HiredEmployeeCreate(**data.dict())
-
             valid_data.append(validated_data)
         except Exception as e:
             error_data = {"data": data, "error": str(e)}
             invalid_data.append(error_data)
 
-    print("it validated schema")
     created_data = crud.hired_employee.create_many(db=db, data=valid_data)
 
     return {
