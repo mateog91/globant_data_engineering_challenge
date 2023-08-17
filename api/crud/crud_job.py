@@ -1,12 +1,13 @@
+from typing import Optional
 from sqlalchemy.orm import Session
-from typing import List
 from crud.base import CRUDBase
+from models import Job
 from schemas.job import JobCreate
 
-import schemas
-from models import Job
 
 class CRUDJob(CRUDBase[Job, JobCreate]):
-    pass
+    def get_by_name(self, db: Session, name: str):
+        return db.query(Job).filter(Job.job == name).first()
+
 
 job = CRUDJob(Job)

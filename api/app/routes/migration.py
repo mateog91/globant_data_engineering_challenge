@@ -7,6 +7,7 @@ from enum import Enum
 from typing import Annotated
 from sqlalchemy.orm import Session
 import csv
+import time
 
 from app.dependencies import get_db
 import crud
@@ -31,7 +32,8 @@ class FileType(str, Enum):
     hired_employee = "hired_employee"
 
 
-csv_schema = {
+
+ft_attributes = {
     "job": {
         "fieldnames": list(models.Job.__table__.columns.keys()),
         "write_function": crud.job.create_many,
@@ -66,14 +68,17 @@ async def create_upload_file(file_type: FileType, file: UploadFile = File(...)):
 
 @router.post("/upload_to_db")
 async def upload_to_db(db: Session = Depends(get_db)):
-    for t in FileType:
-        # t = "hired_employee"
+    final_result = {}
+
+    for t in ft_attributes.keys():
+        current_timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         # variable initialization
-        read_file_path = f"/file_storage/{t}/{t}.csv"
-        fieldnames = csv_schema[t]['fieldnames']
-        write_all_function = csv_schema[t]["write_function"]
-        read_all_function = csv_schema[t]["read_function"]
-        final_result = {}
+        global_path = "file_storage/migration_data/processed_data"
+        read_file_path = f"/file_storage/migration_data/input_data/{t}/{t}.csv"
+        destination_file_path = f"/file_storage/migration_data/processed_data/{t}/{t}_{current_timestamp}.csv"
+        fieldnames = ft_attributes[t]['fieldnames']
+        write_all_function = ft_attributes[t]["write_function"]
+        read_all_function = ft_attributes[t]["read_function"]
 
         # Check if file exists
         file_exists = await aiofiles.os.path.isfile(read_file_path)
@@ -97,45 +102,34 @@ async def upload_to_db(db: Session = Depends(get_db)):
             content, fieldnames=fieldnames, delimiter=',')
         # convert to list
         data_list = []
+
         for row in csv_reader:
-            if row.get('department_id') == '':
-                row['department_id'] = None
-            if row.get("job_id") == '':
-                row['job_id'] = None
+            del row['id']
+            if t == "hired_employee":
+            # if t == FileType.hired_employee:
+                if row.get('department_id') == '':
+                    row['department_id'] = None
+                if row.get("job_id") == '':
+                    row['job_id'] = None
             data_list.append(row)
-
-        # data_list = list(csv_reader)
-
-        # test = data_list[66]['department_id']
-        # void_string = ''
-        # print(f"printing thest:-- {test}--", type(test), len(test))
-
-        # print(test is None)
-        # break
-
+        # [print(i, type(i)) for i in data_list]
         # call write function of particular model
-        # try:
-        #     result = write_all_function(db=db, data=data_list)
-        # except Exception as e:
-        result = write_all_function(db=db, data=data_list)
+        try:
+            result = write_all_function(db=db, data=data_list)
+            # move file to processed folder
+            await aiofiles.os.replace(read_file_path, destination_file_path)
+        except Exception as e:
+            # , status_code=status.HTTP_400_BAD_REQUEST}
+            return {"message": f"error\n{e}"}
 
-        # store result
+        print(f"wrote {len(result)} rows to {t}")
+
         final_result[t] = len(result)
+        # store result
+        print(t, final_result[t])
+        # print(final_result)
 
     return {"message": f"created\n{final_result}"}
-
-    # if file_type == FileType.job:
-    #     crud.job.create_many() (db, file_type)
-    # elif file_type == FileType.department:
-    #     crud.create_departments_from_csv(db, file_type)
-    # elif file_type == FileType.hired_employee:
-    #     crud.create_hired_employees_from_csv(db, file_type)
-    # else:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_400_BAD_REQUEST,
-    #         detail="File type not recognized"
-    #     )
-    # return {"status": "success"}
 
 
 async def upload_csv(file: UploadFile = File(...), db: Session = Depends(get_db)):
@@ -169,3 +163,10 @@ async def upload_csv(file: UploadFile = File(...), db: Session = Depends(get_db)
     return {"message": f"{len(created_employees)} employees created"}
 
 # Other routes and app configurations
+
+
+@router.get("/test")
+async def test():
+    # file_types_names = 
+    for t in FileType:
+        print(t)

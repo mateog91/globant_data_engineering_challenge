@@ -25,8 +25,8 @@ class CRUDBase(tp.Generic[ModelType, CreateSchemaType]):
         result = db.query(self.model).offset(skip).limit(limit).all()
         return result
 
-    def create(self, db: Session, data: CreateSchemaType) -> ModelType:
-        db_obj_data = jsonable_encoder(data)
+    def create(self, db: Session, data_in: CreateSchemaType) -> ModelType:
+        db_obj_data = jsonable_encoder(data_in)
         row = self.model(**db_obj_data)
         db.add(row)
         db.commit()
@@ -34,13 +34,14 @@ class CRUDBase(tp.Generic[ModelType, CreateSchemaType]):
         return row
 
     def create_many(self, db: Session, data: tp.List[CreateSchemaType]) -> tp.List[ModelType]:
-        all_chunks = ichunked(data, 1000)
         return_rows = []
+        all_chunks = ichunked(data, 2)
         for chunck in all_chunks:
             rows = [self.model(**jsonable_encoder(row)) for row in chunck]
             db.add_all(rows)
-            db.commit()
-            for row in rows:
-                db.refresh(row)
+            db.flush()
             return_rows.extend(rows)
+        db.commit()
+        for row in return_rows:
+            db.refresh(row)
         return return_rows

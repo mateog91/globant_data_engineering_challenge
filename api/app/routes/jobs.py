@@ -13,17 +13,21 @@ router = APIRouter(
     tags=["jobs"]
 )
 
+
 @router.post("/", response_model=schemas.Job)
-def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
-    # db_job = crud_old.get_job_by_name(db, name=job.job)
-    # if db_job:
-    #     raise HTTPException(status_code=400, detail="Job already registered")
-    return crud.job.create(db=db, data=job)
+def create_job(job_in: schemas.JobCreate, db: Session = Depends(get_db)):
+    db_job = crud.job.get_by_name(db, name=job_in.job)
+    if db_job:
+        raise HTTPException(
+            status_code=400, detail=f"Job name {job_in.job} already registered")
+    return crud.job.create(db=db, data_in=job_in)
+
 
 @router.get("/", response_model=list[schemas.Job])
 def read_jobs(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     jobs = crud.job.get_all(db, skip=skip, limit=limit)
     return jobs
+
 
 @router.get("/hired_employees/{job_id}", response_model=list[schemas.HiredEmployee])
 def get_hired_employees_by_job(job_id: int, db: Session = Depends(get_db)):

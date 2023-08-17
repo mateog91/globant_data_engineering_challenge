@@ -6,7 +6,10 @@ from schemas.department import DepartmentCreate
 import schemas
 from models import Department
 
+
 class CRUDDepartment(CRUDBase[Department, DepartmentCreate]):
-    pass
+    def get_by_name(self, db: Session, name: str):
+        return db.query(Department).filter(Department.department == name).first()
+
 
 department = CRUDDepartment(Department)

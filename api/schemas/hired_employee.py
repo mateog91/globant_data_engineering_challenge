@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 class HiredEmployeeBase(BaseModel):
     name: Optional[str] = None
-    datetime: Optional[str] = None
     department_id: Optional[int] = None
     job_id: Optional[int] = None
 
@@ -12,12 +11,13 @@ class HiredEmployeeBase(BaseModel):
 class HiredEmployeeCreate(HiredEmployeeBase):
     pass
 
-class HiredEmployeeCreateList(HiredEmployeeCreate):
-    id: int
+
+
 
 
 class HiredEmployee(HiredEmployeeBase):
     id: int
+    datetime: Optional[str] = None
 
     class Config:
         orm_mode = True
