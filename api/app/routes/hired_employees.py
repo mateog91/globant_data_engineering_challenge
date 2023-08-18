@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 from math import e
 from fastapi import APIRouter, status, HTTPException, Depends
 from sqlalchemy.orm import Session
-from schemas.hired_employee import HiredEmployeeCreate
 
 from app.dependencies import get_db
 import crud
@@ -18,6 +17,8 @@ router = APIRouter(
 
 @router.post("/", response_model=schemas.HiredEmployee)
 def create_hired_employee(hired_employee_in: schemas.HiredEmployeeCreate, db: Session = Depends(get_db)):
+    """
+    Create a hired employee"""
 
     return crud.hired_employee.create(db=db, data_in=hired_employee_in)
 
@@ -27,6 +28,8 @@ def read_hired_employees(
     skip: int = 0,
     limit: int = 100, db: Session = Depends(get_db)
 ):
+    """
+    Get all hired employees"""
     hired_employees = crud.hired_employee.get_all(db, skip=skip, limit=limit)
     return hired_employees
 
@@ -39,21 +42,44 @@ def create_hired_employees(
     """
     Create hired employees from a list of json objects
     """
+    # create lists to store valid and invalid data
     valid_data = []
     invalid_data = []
 
+    # validate data
     for data in list_data_in:
         try:
-            validated_data = HiredEmployeeCreate(**data.dict())
-            valid_data.append(validated_data)
+            # check if input data is correct schema/type
+            validated_data = schemas.HiredEmployeeCreate(**data.dict())
         except Exception as e:
-            error_data = {"data": data, "error": str(e)}
-            invalid_data.append(error_data)
+            invalid_data.append({"data": data, "error": str(e)})
+            continue
+        # check if department exists
+        if validated_data.department_id is not None:
 
+            department_db = crud.department.get(
+                db, id=validated_data.department_id)
+
+            # check if job's and department's id's exist
+            if not department_db:
+                invalid_data.append(
+                    {"data": data, "error": f"Department {validated_data.department_id} does not exist"})
+                continue
+
+        if validated_data.job_id is not None:
+            job_db = crud.job.get(db, id=validated_data.job_id)
+            if not job_db:
+                invalid_data.append(
+                    {"data": data, "error": f"Job {validated_data.job_id} does not exist"})
+                continue
+
+        valid_data.append(validated_data)
+
+    # create valid data
     created_data = crud.hired_employee.create_many(db=db, data=valid_data)
 
     return {
-        "message": f"success: {len(created_data)}\n faild: {len(invalid_data)}",
+        "message": f"success: {len(created_data)}, faild: {len(invalid_data)}",
         "valid data": created_data,
         "invalid data": invalid_data,
     }

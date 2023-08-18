@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 
 from models.base import Base
@@ -10,7 +10,7 @@ class Hired_Employee(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
-    datetime = Column(String)
+    datetime = Column(DateTime)
     department_id = Column(Integer, ForeignKey("departments.id"))
     job_id = Column(Integer, ForeignKey("jobs.id"))
 

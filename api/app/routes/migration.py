@@ -4,7 +4,7 @@
 from dataclasses import field
 from datetime import datetime
 from enum import Enum
-from typing import Annotated
+from typing import Annotated, Any
 from sqlalchemy.orm import Session
 import csv
 import time
@@ -32,7 +32,6 @@ class FileType(str, Enum):
     hired_employee = "hired_employee"
 
 
-
 ft_attributes = {
     "job": {
         "fieldnames": list(models.Job.__table__.columns.keys()),
@@ -46,7 +45,7 @@ ft_attributes = {
     },
     "hired_employee": {
         "fieldnames": list(models.Hired_Employee.__table__.columns.keys()),
-        "write_function": crud.hired_employee.create_many,
+        "write_function": crud.hired_employee.create_many_import,
         "read_function": crud.hired_employee.get_all
     }
 }
@@ -102,16 +101,23 @@ async def upload_to_db(db: Session = Depends(get_db)):
             content, fieldnames=fieldnames, delimiter=',')
         # convert to list
         data_list = []
-
+        row: dict[str, Any]
         for row in csv_reader:
             del row['id']
             if t == "hired_employee":
-            # if t == FileType.hired_employee:
                 if row.get('department_id') == '':
                     row['department_id'] = None
                 if row.get("job_id") == '':
                     row['job_id'] = None
-            data_list.append(row)
+                if row.get("datetime") == '':
+                    row['datetime'] = None
+                obj_in = schemas.HiredEmployeeImport(**row)
+            elif t == "job":
+                obj_in = schemas.JobCreate(**row)
+            else:
+                obj_in = schemas.DepartmentCreate(**row)
+
+            data_list.append(obj_in)
         # [print(i, type(i)) for i in data_list]
         # call write function of particular model
         try:
@@ -130,43 +136,3 @@ async def upload_to_db(db: Session = Depends(get_db)):
         # print(final_result)
 
     return {"message": f"created\n{final_result}"}
-
-
-async def upload_csv(file: UploadFile = File(...), db: Session = Depends(get_db)):
-    # Read the uploaded CSV file
-    content = await file.read()
-
-    # Decode the content and split lines
-    decoded_content = content.decode("utf-8")
-    csv_reader = csv.DictReader(decoded_content.splitlines(), delimiter=',')
-
-    employees_to_create = []
-
-    # Convert CSV data to HiredEmployeeCreate instances
-    for row in csv_reader:
-        employee_data = {
-            "name": row.get("name"),
-            "datetime": row.get("datetime"),
-            "department_id": int(row.get("department_id")),
-            "job_id": int(row.get("job_id"))
-        }
-        employees_to_create.append(employee_data)
-
-    # Create instances of HiredEmployeeCreate
-    hired_employees = [schemas.HiredEmployeeCreate(
-        **data) for data in employees_to_create]
-
-    # Insert the data into the database
-    created_employees = crud.hired_employee.create_many(
-        db=db, data=hired_employees)
-
-    return {"message": f"{len(created_employees)} employees created"}
-
-# Other routes and app configurations
-
-
-@router.get("/test")
-async def test():
-    # file_types_names = 
-    for t in FileType:
-        print(t)

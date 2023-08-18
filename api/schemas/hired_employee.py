@@ -1,5 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel
+from datetime import datetime as datetime_
 
 
 class HiredEmployeeBase(BaseModel):
@@ -14,7 +15,10 @@ class HiredEmployeeCreate(HiredEmployeeBase):
 
 class HiredEmployee(HiredEmployeeBase):
     id: int
-    datetime: Optional[str] = None
+    datetime: Optional[datetime_] = None
 
     class Config:
         orm_mode = True
+
+class HiredEmployeeImport(HiredEmployeeBase):
+    datetime: Optional[datetime_] = None

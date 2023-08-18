@@ -17,3 +17,6 @@ class Department(DepartementBase):
 
     class Config:
         orm_mode = True
+        
+class DepartmentImport(DepartementBase):
+    pass
