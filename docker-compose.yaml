@@ -8,10 +8,8 @@ services:
     restart: always
     env_file:
       - .env
-    # environment:
-    #   POSTGRES_USER: postgres
-    #   POSTGRES_PASSWORD: pswd12345
-    #   POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   api:
     env_file:
@@ -28,3 +26,4 @@ services:
       - postgresserver
 volumes:
   file_storage:
+  postgres_data:
