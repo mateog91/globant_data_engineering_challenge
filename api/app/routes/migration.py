@@ -118,21 +118,16 @@ async def upload_to_db(db: Session = Depends(get_db)):
                 obj_in = schemas.DepartmentCreate(**row)
 
             data_list.append(obj_in)
-        # [print(i, type(i)) for i in data_list]
         # call write function of particular model
         try:
             result = write_all_function(db=db, data=data_list)
             # move file to processed folder
             await aiofiles.os.replace(read_file_path, destination_file_path)
         except Exception as e:
-            # , status_code=status.HTTP_400_BAD_REQUEST}
             return {"message": f"error\n{e}"}
 
-        print(f"wrote {len(result)} rows to {t}")
 
         final_result[t] = len(result)
         # store result
-        print(t, final_result[t])
-        # print(final_result)
 
     return {"message": f"created\n{final_result}"}
