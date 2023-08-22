@@ -6,12 +6,16 @@ services:
     ports:
       - "5432:5432"
     restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: pswd12345
-      POSTGRES_DB: postgres
+    env_file:
+      - .env
+    # environment:
+    #   POSTGRES_USER: postgres
+    #   POSTGRES_PASSWORD: pswd12345
+    #   POSTGRES_DB: postgres
 
   api:
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: api.Dockerfile

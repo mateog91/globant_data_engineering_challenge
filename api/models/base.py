@@ -3,11 +3,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 #change this to secure way!
-### TEMPORARY ###
-POSTGRES_USER = 'postgres'
-POSTGRES_PASSWORD = 'pswd12345'
-POSTGRES_DB = 'postgres'
-##################
+#get env variables
+import os
+
+POSTGRES_USER = os.environ.get('POSTGRES_USER')
+POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
+POSTGRES_DB = os.environ.get('POSTGRES_DB')
+
 
 SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@postgresserver/{POSTGRES_DB}"
 
